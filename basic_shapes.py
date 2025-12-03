@@ -1,19 +1,27 @@
-# 1. Rectangle
-# (x1, y1, x2, y2)
-canvas.create_rectangle(
-    50, 50, 150, 120,
-    outline="black",
-    fill="lightblue",
-    width=2
-)
+import tkinter as tk
 
-# 2. Oval (inside the bounding box x1,y1,x2,y2)
-canvas.create_oval(
-    200, 50, 320, 150,
-    outline="black",
-    fill="lightgreen",
-    width=2
-)
+root = tk.Tk()
+root.title("Tkinter Canvas Example")
+
+canvas = tk.Canvas(root, width=800, height=600, bg="white")
+canvas.pack()
+
+# # 1. Rectangle
+# # (x1, y1, x2, y2)
+# canvas.create_rectangle(
+#     50, 50, 150, 120,
+#     outline="black",
+#     fill="lightblue",
+#     width=2
+# )
+
+# # 2. Oval (inside the bounding box x1,y1,x2,y2)
+# canvas.create_oval(
+#     200, 50, 320, 150,
+#     outline="black",
+#     fill="lightgreen",
+#     width=2
+# )
 
 # 3. Line
 canvas.create_line(
@@ -21,15 +29,15 @@ canvas.create_line(
     width=3
 )
 
-# 4. Polygon (normal, not smooth) – e.g. triangle
-canvas.create_polygon(
-    350, 50,   # point 1
-    450, 150,  # point 2
-    300, 150,  # point 3
-    outline="black",
-    fill="pink",
-    width=2
-)
+# # 4. Polygon (normal, not smooth) – e.g. triangle
+# canvas.create_polygon(
+#     350, 50,   # point 1
+#     450, 150,  # point 2
+#     300, 150,  # point 3
+#     outline="black",
+#     fill="pink",
+#     width=2
+# )
 
 # 5. Smooth polygon (curved shape)
 canvas.create_polygon(
@@ -59,3 +67,5 @@ canvas.create_arc(
     style=tk.ARC,        # just the arc outline
     width=3
 )
+
+root.mainloop()

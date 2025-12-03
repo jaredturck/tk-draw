@@ -1,4 +1,4 @@
-import pygame, sys, time
+import pygame, sys, time, math
 
 class DrawApp:
     def __init__(self):
@@ -209,6 +209,70 @@ class DrawApp:
         while y < height:
             pygame.draw.line(self.screen, grid_color, (0, int(y)), (width, int(y)), 1)
             y += spacing
+    
+    def draw_shape_labels(self):
+        '''Draw small shape preview labels (triangle + rectangle + circle).'''
+        box_margin = 5
+        box_width = 35
+        box_height = 35
+
+        box_y = self.palette_rect.top - box_height - box_margin
+
+        first_x = box_margin
+        second_x = first_x + box_width + box_margin
+        third_x = second_x + box_width + box_margin
+
+        box_rects = [
+            pygame.Rect(first_x,  box_y, box_width, box_height),
+            pygame.Rect(second_x, box_y, box_width, box_height),
+            pygame.Rect(third_x,  box_y, box_width, box_height),
+        ]
+
+        for box_rect in box_rects:
+            pygame.draw.rect(self.screen, (255, 255, 255), box_rect)
+            pygame.draw.rect(self.screen, (0, 0, 0), box_rect, 1)
+
+        border_color = self.color
+        fill_color = self.fill_color
+
+        center_x = box_rects[0].centerx
+        base_y = box_rects[0].bottom - 10
+        half_base = 20 / math.sqrt(3)
+
+        p1 = (int(center_x - half_base), int(base_y))
+        p2 = (int(center_x + half_base), int(base_y))
+        p3 = (int(center_x), int(base_y - 20))
+
+        tri_points = [p1, p2, p3]
+
+        if fill_color is not None:
+            pygame.draw.polygon(self.screen, fill_color, tri_points)
+        pygame.draw.polygon(self.screen, border_color, tri_points, 2)
+
+        rect_box = box_rects[1]
+        inset = 7
+        inner_rect = pygame.Rect(
+            rect_box.x + inset,
+            rect_box.y + inset,
+            rect_box.width - 2 * inset,
+            rect_box.height - 2 * inset
+        )
+
+        if fill_color is not None:
+            pygame.draw.rect(self.screen, fill_color, inner_rect)
+        pygame.draw.rect(self.screen, border_color, inner_rect, 2)
+
+        circ_box = box_rects[2]
+        circle_rect = pygame.Rect(
+            circ_box.x + inset,
+            circ_box.y + inset,
+            circ_box.width - 2 * inset,
+            circ_box.height - 2 * inset
+        )
+
+        if fill_color is not None:
+            pygame.draw.ellipse(self.screen, fill_color, circle_rect)
+        pygame.draw.ellipse(self.screen, border_color, circle_rect, 2)
 
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
@@ -343,6 +407,7 @@ class DrawApp:
             self.draw_sv_box()
             self.draw_labels()
             self.draw_palette()
+            self.draw_shape_labels()
             self.draw_cursor()
             
             pygame.display.flip()
