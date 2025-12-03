@@ -13,6 +13,7 @@ class DrawApp:
         self.line_width = 5
         self.color = (0, 0, 0)
         self.last_click = time.time()
+        self.offset = (0, 0)
     
     def handle_draw_shape(self, event):
         x, y = event.pos
@@ -48,9 +49,24 @@ class DrawApp:
         rect.bottomleft = (self.window_size[0] - 110, self.window_size[1] - 10)
         self.screen.blit(label, rect)
     
+    def handle_panning(self):
+        if pygame.mouse.get_pressed()[0]:
+            new_offset = pygame.mouse.get_pos()
+            x = new_offset[0] - self.start_offset[0]
+            y = new_offset[1] - self.start_offset[1]
+
+            # Update all traingles
+            for i in range(len(self.triangles)):
+                self.triangles[i][0][0] = self.triangles[i][0][0][0] + x, self.triangles[i][0][0][1] + y
+                self.triangles[i][0][1] = self.triangles[i][0][1][0] + x, self.triangles[i][0][1][1] + y
+                self.triangles[i][0][2] = self.triangles[i][0][2][0] + x, self.triangles[i][0][2][1] + y
+            
+            self.start_offset = new_offset
+    
     def main(self):
         running = True
         while running:
+            self.handle_panning()
             for event in pygame.event.get():
                 mods = pygame.key.get_mods()
 
@@ -60,6 +76,9 @@ class DrawApp:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if mods & pygame.KMOD_CTRL:
                         self.handle_draw_shape(event)
+                    
+                    self.start_offset = pygame.mouse.get_pos()
+                    print('Mouse down')
                 
                 # Change line thickness
                 if event.type == pygame.KEYDOWN:
