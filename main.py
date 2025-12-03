@@ -47,8 +47,20 @@ class ChristmasDrawing:
             (self.draw_triangle, x, y + 3*h, s*2.4, s*1.0)   # 4th tier
         )
     
+    def draw_mountain(self, x, y, s):
+        ''' Draws a mountain with a 4-triangle snow cap '''
+        w, h = s * 0.7, s
+        
+        # self.canvas.create_polygon(x, y, x - w, y, x, y - h, outline="black", fill="#695034")
+        # self.canvas.create_polygon(x, y, x + w, y, x, y - h, outline="black", fill="#44331F")
+
+        self.canvas.create_polygon(100, 0, 0, 100, 80, 80, outline="black", fill="white")
+        self.canvas.create_polygon(0, 0, 100, 100, 20, 80, outline="black", fill="white")
+
+    
     def main(self):
-        self.draw_tree(x=200, y=140, s=100)
+        # self.draw_tree(x=200, y=140, s=100)
+        self.draw_mountain(x=200, y=220, s=120)
         self.root.mainloop()
 
 if __name__ == "__main__":
