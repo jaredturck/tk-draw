@@ -47,6 +47,9 @@ class DrawApp:
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
 
+        self.grid_lines = []
+        self.build_grid_lines()
+
     def build_palette(self):
         ''' Create a horizontal color palette surface (hue bar). '''
         w, h = self.palette_size
@@ -69,6 +72,17 @@ class DrawApp:
                 c = pygame.Color(0, 0, 0)
                 c.hsva = (self.current_hue, sat, val, 100)
                 self.sv_surface.set_at((x, y), c)
+    
+    def build_grid_lines(self):
+        '''Create extended grid lines every 50px as line segments.'''
+        spacing = 10
+        self.grid_lines = []
+        
+        for y in range(-self.window_size[1], (2 * self.window_size[1]) + spacing, spacing):
+            self.grid_lines.append([(-self.window_size[0], y), (2 * self.window_size[0], y)])
+
+        for x in range(-self.window_size[0], (2 * self.window_size[0]) + spacing, spacing):
+            self.grid_lines.append([(x, -self.window_size[1]), (x, 2 * self.window_size[1])])
 
     def handle_draw_shape(self, event):
         ''' Record clicks and draw triangle after 3 clicks. '''
@@ -184,6 +198,13 @@ class DrawApp:
         if self.sv_cursor_pos is not None:
             x, y = self.sv_cursor_pos
             pygame.draw.circle(self.screen, (0, 0, 0), (x, y), 4, 1)
+    
+    def draw_grid_lines(self):
+        '''Draw gray grid lines that follow panning and zoom.'''
+        grid_color = (180, 180, 180)
+
+        for line in self.grid_lines:
+            pygame.draw.line(self.screen, grid_color, line[0], line[1], 1)
 
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
@@ -203,6 +224,10 @@ class DrawApp:
                 self.triangles[i][0][0] = (cx + (self.triangles[i][0][0][0] - cx) * s, cy + (self.triangles[i][0][0][1] - cy) * s)
                 self.triangles[i][0][1] = (cx + (self.triangles[i][0][1][0] - cx) * s, cy + (self.triangles[i][0][1][1] - cy) * s)
                 self.triangles[i][0][2] = (cx + (self.triangles[i][0][2][0] - cx) * s, cy + (self.triangles[i][0][2][1] - cy) * s)
+            
+            for i in range(len(self.grid_lines)):
+                self.grid_lines[i][0] = (cx + (self.grid_lines[i][0][0] - cx) * s, cy + (self.grid_lines[i][0][1] - cy) * s)
+                self.grid_lines[i][1] = (cx + (self.grid_lines[i][1][0] - cx) * s, cy + (self.grid_lines[i][1][1] - cy) * s)
     
     def handle_panning(self):
         ''' Pan the view when left mouse button is held and mouse is moved '''
@@ -216,6 +241,10 @@ class DrawApp:
                 self.triangles[i][0][0] = self.triangles[i][0][0][0] + x, self.triangles[i][0][0][1] + y
                 self.triangles[i][0][1] = self.triangles[i][0][1][0] + x, self.triangles[i][0][1][1] + y
                 self.triangles[i][0][2] = self.triangles[i][0][2][0] + x, self.triangles[i][0][2][1] + y
+            
+            for i in range(len(self.grid_lines)):
+                self.grid_lines[i][0] = (self.grid_lines[i][0][0] + x, self.grid_lines[i][0][1] + y)
+                self.grid_lines[i][1] = (self.grid_lines[i][1][0] + x, self.grid_lines[i][1][1] + y)
             
             self.start_offset = new_offset
     
@@ -309,10 +338,12 @@ class DrawApp:
 
             self.screen.fill(self.canvas_color)
             self.draw_shapes()
+            self.draw_grid_lines()
             self.draw_sv_box()
             self.draw_labels()
             self.draw_palette()
             self.draw_cursor()
+            
             pygame.display.flip()
 
         pygame.quit()
