@@ -13,6 +13,7 @@ class DrawApp:
         self.line_width = 5
 
         self.color = (0, 0, 0)
+        self.canvas_color = (255, 255, 255)
         self.fill_color = None
         self.color_mode = 'border'
         self.show_border = True
@@ -33,6 +34,7 @@ class DrawApp:
         self.border_label_rect = pygame.Rect(0, 0, 0, 0)
         self.background_label_rect = pygame.Rect(0, 0, 0, 0)
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
+        self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
 
     def build_palette(self):
         ''' Create a horizontal color palette surface. '''
@@ -112,11 +114,18 @@ class DrawApp:
         bg_rect.bottomleft = (base_x, border_rect.top - 5)
         self.screen.blit(bg_label, bg_rect)
 
+        canvas_label = self.font.render('canvas colour', True, (0,0,0))
+        canvas_rect = canvas_label.get_rect()
+        canvas_rect.bottomleft = (base_x, bg_rect.top - 5)
+        self.screen.blit(canvas_label, canvas_rect)
+
         radius = 5
         if self.color_mode == 'border':
             circle_y = border_rect.centery
-        else:
+        elif self.color_mode == 'background':
             circle_y = bg_rect.centery
+        else:
+            circle_y = canvas_rect.centery
 
         circle_x = base_x - 2 * radius
         pygame.draw.circle(self.screen, (0, 0, 0), (circle_x, circle_y), radius)
@@ -124,6 +133,7 @@ class DrawApp:
         self.border_label_rect = border_rect
         self.background_label_rect = bg_rect
         self.border_toggle_rect = toggle_rect
+        self.canvas_label_rect = canvas_rect
 
     def draw_palette(self):
         ''' Draw the color palette at the bottom of the screen '''
@@ -189,8 +199,10 @@ class DrawApp:
 
                 if self.color_mode == 'border':
                     self.color = picked
-                else:
+                elif self.color_mode == 'background':
                     self.fill_color = picked
+                else:
+                    self.canvas_color = picked
 
     def handle_color_mode_click(self, event):
         ''' Switch color mode when labels are clicked '''
@@ -199,6 +211,8 @@ class DrawApp:
                 self.color_mode = 'border'
             elif self.background_label_rect.collidepoint(event.pos):
                 self.color_mode = 'background'
+            elif self.canvas_label_rect.collidepoint(event.pos):
+                self.color_mode = 'canvas'
 
     def handle_border_toggle_click(self, event):
         ''' Toggle border visibility when label is clicked '''
@@ -230,7 +244,7 @@ class DrawApp:
                 self.handle_undo(event, mods)
                 self.handle_zoom(event)
 
-            self.screen.fill((255, 255, 255))
+            self.screen.fill(self.canvas_color)
             self.draw_shapes()
             self.draw_labels()
             self.draw_palette()
