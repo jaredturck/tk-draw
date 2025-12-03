@@ -17,6 +17,7 @@ class DrawApp:
         self.fill_color = None
         self.color_mode = 'border'
         self.show_border = True
+        self.palette_cursor_x = None
 
         self.last_click = time.time()
         self.offset = (0, 0)
@@ -35,6 +36,7 @@ class DrawApp:
         self.background_label_rect = pygame.Rect(0, 0, 0, 0)
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
+
 
     def build_palette(self):
         ''' Create a horizontal color palette surface. '''
@@ -147,8 +149,14 @@ class DrawApp:
     def draw_palette(self):
         ''' Draw the color palette at the bottom of the screen '''
         self.screen.blit(self.palette_surface, self.palette_rect)
-        pygame.draw.rect(self.screen, (0, 0, 0), self.palette_rect, 2)
-    
+        pygame.draw.rect(self.screen, (0, 0, 0), self.palette_rect, 1)
+
+        if self.palette_cursor_x is not None:
+            x = self.palette_cursor_x
+            y1 = self.palette_rect.top
+            y2 = self.palette_rect.bottom
+            pygame.draw.line(self.screen, (0, 0, 0), (x, y1), (x, y2), 2)
+        
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
         if event.type == pygame.MOUSEWHEEL:
@@ -206,6 +214,8 @@ class DrawApp:
                     (event.pos[0] - self.palette_rect.x,
                      event.pos[1] - self.palette_rect.y)
                 )
+
+                self.palette_cursor_x = event.pos[0]
 
                 if self.color_mode == 'border':
                     self.color = picked
