@@ -52,7 +52,7 @@ class DrawApp:
         for triangle, color, line_width in self.triangles:
             pygame.draw.polygon(self.screen, color, triangle, line_width)
         for point in self.selection_points:
-            pygame.draw.circle(self.screen, (255,0,0), point, self.line_width)
+            pygame.draw.circle(self.screen, self.color, point, self.line_width)
         
         if time.time() - self.last_click > 3:
             self.selection_points = []
@@ -121,6 +121,12 @@ class DrawApp:
                 if self.triangles:
                     self.triangles.pop()
     
+    def handle_color_pick(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.palette_rect.collidepoint(event.pos):
+                picked = self.palette_surface.get_at((event.pos[0] - self.palette_rect.x, event.pos[1] - self.palette_rect.y))
+                self.color = picked
+    
     def main(self):
         running = True
         while running:
@@ -140,6 +146,7 @@ class DrawApp:
                 self.handle_line_thickness(event)
                 self.handle_undo(event, mods)
                 self.handle_zoom(event)
+                self.handle_color_pick(event)
 
             self.screen.fill((255, 255, 255))
             self.draw_shapes()
