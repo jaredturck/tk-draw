@@ -17,6 +17,7 @@ class DrawApp:
         self.fill_color = None
         self.color_mode = 'border'
         self.show_border = True
+        self.selected_shape = 'triangle'
 
         self.last_click = time.time()
         self.zoom_level = 1
@@ -228,8 +229,17 @@ class DrawApp:
             pygame.Rect(third_x,  box_y, box_width, box_height),
         ]
 
-        for box_rect in box_rects:
-            pygame.draw.rect(self.screen, (255, 255, 255), box_rect)
+        for i, box_rect in enumerate(box_rects):
+            if i == 0 and self.selected_shape == 'triangle':
+                bg_color = (220, 220, 220)
+            elif i == 1 and self.selected_shape == 'rectangle':
+                bg_color = (220, 220, 220)
+            elif i == 2 and self.selected_shape == 'circle':
+                bg_color = (220, 220, 220)
+            else:
+                bg_color = (255, 255, 255)
+
+            pygame.draw.rect(self.screen, bg_color, box_rect)
             pygame.draw.rect(self.screen, (0, 0, 0), box_rect, 1)
 
         border_color = self.color
