@@ -94,16 +94,54 @@ class DrawApp:
             self.shapes.append(shape)
             self.clicks = []
             self.selection_points = []
+        
+        # circle
+        elif self.selected_shape == 'circle' and len(self.clicks) == 3:
+            (x1, y1), (x2, y2), (x3, y3) = self.clicks
+
+            cx = (x1 + x2) / 2
+            cy = (y1 + y2) / 2
+
+            left  = min(x1, x2)
+            right = max(x1, x2)
+            half_height = abs(y3 - cy)
+            top    = cy - half_height
+            bottom = cy + half_height
+
+            points = [
+                (int(left),  int(top)),
+                (int(right), int(top)),
+                (int(right), int(bottom)),
+                (int(left),  int(bottom)),
+            ]
+
+            shape = ['circle', points, self.color, self.line_width, self.fill_color, self.show_border]
+            self.shapes.append(shape)
+            self.clicks = []
+            self.selection_points = []
     
     def draw_shapes(self):
-        '''Draw all shapes (triangles, rectangles, etc.) and selection points.'''
+        '''Draw all shapes (triangles, rectangles, ovals) and selection points.'''
         for shape in self.shapes:
             shape_type, points, border_color, line_width, fill_color, show_border = shape
 
-            if fill_color is not None:
-                pygame.draw.polygon(self.screen, fill_color, points, 0)
-            if show_border:
-                pygame.draw.polygon(self.screen, border_color, points, line_width)
+            if shape_type == 'circle':
+                xs = [p[0] for p in points]
+                ys = [p[1] for p in points]
+                left, right = min(xs), max(xs)
+                top, bottom = min(ys), max(ys)
+                rect = pygame.Rect(left, top, right - left, bottom - top)
+
+                if fill_color is not None:
+                    pygame.draw.ellipse(self.screen, fill_color, rect, 0)
+                if show_border:
+                    pygame.draw.ellipse(self.screen, border_color, rect, line_width)
+
+            else:
+                if fill_color is not None:
+                    pygame.draw.polygon(self.screen, fill_color, points, 0)
+                if show_border:
+                    pygame.draw.polygon(self.screen, border_color, points, line_width)
 
         for point in self.selection_points:
             pygame.draw.circle(self.screen, self.color, point, self.line_width)
@@ -111,7 +149,7 @@ class DrawApp:
         if time.time() - self.last_click > 3:
             self.selection_points = []
             self.clicks = []
-            self.last_click = time.time()
+        self.last_click = time.time()
     
     def draw_cursor(self):
         ''' Draw a circle at the mouse position to represent the cursor '''
@@ -450,8 +488,8 @@ class DrawApp:
                 self.handle_zoom(event)
 
             self.screen.fill(self.canvas_color)
-            self.draw_shapes()
             self.draw_grid_lines()
+            self.draw_shapes()
             self.draw_sv_box()
             self.draw_labels()
             self.draw_palette()
