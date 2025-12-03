@@ -14,6 +14,7 @@ class DrawApp:
         self.color = (0, 0, 0)
         self.last_click = time.time()
         self.offset = (0, 0)
+        self.zoom_level = 1
     
     def handle_draw_shape(self, event):
         x, y = event.pos
@@ -47,6 +48,24 @@ class DrawApp:
         rect = label.get_rect()
         rect.bottomleft = (self.window_size[0] - 110, self.window_size[1] - 10)
         self.screen.blit(label, rect)
+    
+    def handle_zoom(self, event):
+        if event.type == pygame.MOUSEWHEEL:
+            old_zoom = self.zoom_level
+            if event.y > 0:
+                self.zoom_level += 1
+            elif event.y < 0:
+                self.zoom_level -= 1
+                self.zoom_level = max(1, self.zoom_level)
+            
+            s = self.zoom_level / old_zoom
+            cx = self.window_size[0] / 2
+            cy = self.window_size[1] / 2
+
+            for i in range(len(self.triangles)):
+                self.triangles[i][0][0] = (cx + (self.triangles[i][0][0][0] - cx) * s, cy + (self.triangles[i][0][0][1] - cy) * s)
+                self.triangles[i][0][1] = (cx + (self.triangles[i][0][1][0] - cx) * s, cy + (self.triangles[i][0][1][1] - cy) * s)
+                self.triangles[i][0][2] = (cx + (self.triangles[i][0][2][0] - cx) * s, cy + (self.triangles[i][0][2][1] - cy) * s)
     
     def handle_panning(self):
         if pygame.mouse.get_pressed()[0]:
@@ -96,6 +115,7 @@ class DrawApp:
                 
                 self.handle_line_thickness(event)
                 self.handle_undo(event, mods)
+                self.handle_zoom(event)
 
             self.screen.fill((255, 255, 255))
             self.draw_shapes()
