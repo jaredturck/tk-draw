@@ -19,7 +19,6 @@ class DrawApp:
         self.show_border = True
 
         self.last_click = time.time()
-        self.offset = (0, 0)
         self.zoom_level = 1
 
         self.grid_spacing = 10
@@ -51,9 +50,6 @@ class DrawApp:
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
 
-        self.grid_lines = []
-        self.build_grid_lines()
-
     def build_palette(self):
         ''' Create a horizontal color palette surface (hue bar). '''
         w, h = self.palette_size
@@ -76,17 +72,6 @@ class DrawApp:
                 c = pygame.Color(0, 0, 0)
                 c.hsva = (self.current_hue, sat, val, 100)
                 self.sv_surface.set_at((x, y), c)
-    
-    def build_grid_lines(self):
-        '''Create extended grid lines every 50px as line segments.'''
-        spacing = 10
-        self.grid_lines = []
-        
-        for y in range(-self.window_size[1], (2 * self.window_size[1]) + spacing, spacing):
-            self.grid_lines.append([(-self.window_size[0], y), (2 * self.window_size[0], y)])
-
-        for x in range(-self.window_size[0], (2 * self.window_size[0]) + spacing, spacing):
-            self.grid_lines.append([(x, -self.window_size[1]), (x, 2 * self.window_size[1])])
 
     def handle_draw_shape(self, event):
         ''' Record clicks and draw triangle after 3 clicks. '''
