@@ -84,11 +84,20 @@ class DrawApp:
     
     def draw_labels(self):
         ''' Draw labels for line width, border toggle, and color modes '''
-        base_x = self.window_size[0] - 150
+        
+        box_width = 172
+        box_height = 110
+        box_x = self.window_size[0] - box_width - 5
+        box_y = self.window_size[1] - box_height - 35
+
+        pygame.draw.rect(self.screen, (255, 255, 255), (box_x, box_y, box_width, box_height))
+        pygame.draw.rect(self.screen, (0, 0, 0), (box_x, box_y, box_width, box_height), 2)
+
+        base_x = self.window_size[0] - 150 - 7
 
         lw_label = self.font.render(f'line width: {self.line_width}', True, (0, 0, 0))
         lw_rect = lw_label.get_rect()
-        lw_rect.bottomleft = (base_x, self.window_size[1] - 30)
+        lw_rect.bottomleft = (base_x, self.window_size[1] - 40)
         self.screen.blit(lw_label, lw_rect)
 
         if self.show_border:
@@ -114,7 +123,7 @@ class DrawApp:
         bg_rect.bottomleft = (base_x, border_rect.top - 5)
         self.screen.blit(bg_label, bg_rect)
 
-        canvas_label = self.font.render('canvas colour', True, (0,0,0))
+        canvas_label = self.font.render('canvas colour', True, (0, 0, 0))
         canvas_rect = canvas_label.get_rect()
         canvas_rect.bottomleft = (base_x, bg_rect.top - 5)
         self.screen.blit(canvas_label, canvas_rect)
@@ -138,6 +147,7 @@ class DrawApp:
     def draw_palette(self):
         ''' Draw the color palette at the bottom of the screen '''
         self.screen.blit(self.palette_surface, self.palette_rect)
+        pygame.draw.rect(self.screen, (0, 0, 0), self.palette_rect, 2)
     
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
