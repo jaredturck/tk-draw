@@ -9,3 +9,10 @@ Features:
 - Movement zoom and pan
 - Colour picker
 - toggle grid lines
+
+Controls:
+- Hold `Ctrl` key and click canvas to select vertices of poligon
+- `Ctrl + Z` to undo
+- `[` or `]` to change line thickness.
+- Click and drag to pan
+- scroll mouse wheel to zoom
