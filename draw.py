@@ -36,6 +36,8 @@ class DrawApp:
 
         self.current_hue = 0.0
         self.palette_cursor_x = None
+        self.show_grid = True
+        self.grid_toggle_rect = pygame.Rect(0, 0, 0, 0)
 
         self.build_palette()
 
@@ -160,7 +162,7 @@ class DrawApp:
         ''' Draw labels for line width, border toggle, and color modes '''
         
         box_width = 172
-        box_height = 110
+        box_height = 130
         box_x = self.window_size[0] - box_width - 5
         box_y = self.window_size[1] - box_height - 35
 
@@ -174,6 +176,16 @@ class DrawApp:
         lw_rect.bottomleft = (base_x, self.window_size[1] - 40)
         self.screen.blit(lw_label, lw_rect)
 
+        if self.show_grid:
+            grid_text = 'grid: on'
+        else:
+            grid_text = 'grid: off'
+
+        grid_label = self.font.render(grid_text, True, (0, 0, 0))
+        grid_rect = grid_label.get_rect()
+        grid_rect.bottomleft = (base_x, lw_rect.top - 5)
+        self.screen.blit(grid_label, grid_rect)
+
         if self.show_border:
             toggle_text = 'border: on'
         else:
@@ -181,7 +193,7 @@ class DrawApp:
 
         toggle_label = self.font.render(toggle_text, True, (0, 0, 0))
         toggle_rect = toggle_label.get_rect()
-        toggle_rect.bottomleft = (base_x, lw_rect.top - 5)
+        toggle_rect.bottomleft = (base_x, grid_rect.top - 5)
         self.screen.blit(toggle_label, toggle_rect)
 
         border_colour = self.color
@@ -217,6 +229,7 @@ class DrawApp:
         self.background_label_rect = bg_rect
         self.border_toggle_rect = toggle_rect
         self.canvas_label_rect = canvas_rect
+        self.grid_toggle_rect = grid_rect
 
     def draw_palette(self):
         ''' Draw the color palette (hue bar) at the bottom of the screen '''
@@ -240,6 +253,8 @@ class DrawApp:
     
     def draw_grid_lines(self):
         ''' Draw gray grid lines that follow panning and zoom '''
+        if not self.show_grid:
+            return
         grid_color = (180, 180, 180)
 
         spacing = self.grid_spacing * self.zoom_level
@@ -462,6 +477,12 @@ class DrawApp:
             elif circle_rect.collidepoint(mx, my):
                 self.selected_shape = 'circle'
     
+    def handle_grid_toggle_click(self, event):
+        ''' Toggle grid visibility when label is clicked '''
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.grid_toggle_rect.collidepoint(event.pos):
+                self.show_grid = not self.show_grid
+    
     def main(self):
         running = True
         while running:
@@ -475,6 +496,7 @@ class DrawApp:
                 self.handle_color_mode_click(event)
                 self.handle_color_pick(event)
                 self.handle_border_toggle_click(event)
+                self.handle_grid_toggle_click(event)
                 self.handle_shape_selection(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
