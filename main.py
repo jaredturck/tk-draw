@@ -6,8 +6,8 @@ class ChristmasDrawing:
         self.y_base = 120
 
         self.root = tk.Tk()
-        self.root.title("Tkinter Canvas Shapes Demo")
-        self.canvas = tk.Canvas(self.root, width=600, height=600, bg="white")
+        self.root.title("Tkinter Drawer")
+        self.canvas = tk.Canvas(self.root, width=1000, height=600, bg="white")
         self.canvas.pack()
     
     def draw_in_reverse(self, *func):
@@ -26,15 +26,20 @@ class ChristmasDrawing:
         ''' Draws a triangle with shading, w=width, h=height '''
         self.canvas.create_polygon(x, y - h, x + w/2, y, x, y, outline="", fill="black") # right dark half
         self.canvas.create_polygon(x - w/2, y, x, y, x, y - h, outline="", fill="white") # left light half
-        self.canvas.create_polygon(x - w/2, y, x + w/2, y, x, y - h, outline="black", fill="", width=self.stroke, joinstyle=tk.ROUND) # thick outline
+        self.canvas.create_polygon(x - w/2, y, x + w/2, y, x, y - h, outline="black", fill="", width=h*0.2, joinstyle=tk.ROUND) # thick outline
     
     def draw_arc(self, x, y, w, h, r):
         ''' Draws a half-arc (half ellipse) centred at (x,y), rotated by r degrees '''
         self.canvas.create_arc(x - w/2, y - h/2, x + w/2, y + h/2, start=270 + r, extent=180, style=tk.ARC, width=self.stroke)
     
+    def draw_rectangle(self, x, y, w, h):
+        ''' Draws a filled rectangle, w=width, h=height '''
+        self.canvas.create_rectangle(x - w/2, y, x + w/2, y + h, outline="", fill="black")
+    
     def draw_tree(self, x, y, s):
         ''' Draws a tree '''
         w, h = s, s * 0.7
+        self.draw_rectangle(x, y + 3*h, s * 0.275, s * 0.7)
         self.draw_in_reverse(
             (self.draw_triangle, x, y, w, h), # 1st tier
             (self.draw_triangle, x, y + h, s*1.4, s*0.8),  # 2nd tier
