@@ -377,6 +377,32 @@ class DrawApp:
             if self.border_toggle_rect.collidepoint(event.pos):
                 self.show_border = not self.show_border
     
+    def handle_shape_selection(self, event):
+        '''Set selected_shape based on which shape label box was clicked.'''
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            box_margin = 5
+            box_width = 35
+            box_height = 35
+
+            box_y = self.palette_rect.top - box_height - box_margin
+
+            first_x = box_margin
+            second_x = first_x + box_width + box_margin
+            third_x = second_x + box_width + box_margin
+
+            triangle_rect = pygame.Rect(first_x,  box_y, box_width, box_height)
+            rectangle_rect = pygame.Rect(second_x, box_y, box_width, box_height)
+            circle_rect = pygame.Rect(third_x,  box_y, box_width, box_height)
+
+            mx, my = event.pos
+
+            if triangle_rect.collidepoint(mx, my):
+                self.selected_shape = 'triangle'
+            elif rectangle_rect.collidepoint(mx, my):
+                self.selected_shape = 'rectangle'
+            elif circle_rect.collidepoint(mx, my):
+                self.selected_shape = 'circle'
+    
     def main(self):
         running = True
         while running:
@@ -390,6 +416,7 @@ class DrawApp:
                 self.handle_color_mode_click(event)
                 self.handle_color_pick(event)
                 self.handle_border_toggle_click(event)
+                self.handle_shape_selection(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if mods & pygame.KMOD_CTRL:
