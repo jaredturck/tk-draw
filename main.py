@@ -32,16 +32,18 @@ class ChristmasDrawing:
         ''' Draws a half-arc (half ellipse) centred at (x,y), rotated by r degrees '''
         self.canvas.create_arc(x - w/2, y - h/2, x + w/2, y + h/2, start=270 + r, extent=180, style=tk.ARC, width=self.stroke)
     
-    def draw_tree(self, x, y):
+    def draw_tree(self, x, y, s):
+        ''' Draws a tree '''
+        w, h = s, s * 0.7
         self.draw_in_reverse(
-            (self.draw_triangle, 100, 140, 100, 70),   # top tier (smallest)
-            (self.draw_triangle, 100, 210, 140, 80),   # 2nd tier
-            (self.draw_triangle, 100, 280, 190, 90),   # 3rd tier
-            (self.draw_triangle, 100, 350, 240, 100)   # 4th tier (largest)
+            (self.draw_triangle, x, y, w, h), # 1st tier
+            (self.draw_triangle, x, y + h, w + 40, h + 10),  # 2nd tier
+            (self.draw_triangle, x, y + 2*h, w + 90, h + 20),  # 3rd tier
+            (self.draw_triangle, x, y + 3*h, w + 140, h + 30)   # 4th tier
         )
     
     def main(self):
-        self.draw_tree()
+        self.draw_tree(x=200, y=140, s=100)
         self.root.mainloop()
 
 if __name__ == "__main__":
