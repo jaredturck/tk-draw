@@ -17,12 +17,12 @@ class DrawApp:
         self.zoom_level = 1
 
         self.palette_height = 20
-        self.palette_width = self.window_size[0] - 40
+        self.palette_width = self.window_size[0] - 10
         self.palette_size = (self.palette_width, self.palette_height)
 
         self.palette_surface = pygame.Surface(self.palette_size)
         self.palette_rect = self.palette_surface.get_rect()
-        self.palette_rect.midbottom = (self.window_size[0] // 2, self.window_size[1] - 40)
+        self.palette_rect.midbottom = (self.window_size[0] // 2, self.window_size[1] - 5)
         self.build_palette()
 
     def build_palette(self):
@@ -67,7 +67,7 @@ class DrawApp:
         # line width label
         label = self.font.render(f'line width: {self.line_width}', True, (0,0,0))
         rect = label.get_rect()
-        rect.bottomleft = (self.window_size[0] - 110, self.window_size[1] - 10)
+        rect.bottomleft = (self.window_size[0] - 110, self.window_size[1] - 30)
         self.screen.blit(label, rect)
 
     def draw_palette(self):
