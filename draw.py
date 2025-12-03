@@ -15,7 +15,25 @@ class DrawApp:
         self.last_click = time.time()
         self.offset = (0, 0)
         self.zoom_level = 1
-    
+
+        self.palette_size = (256, 256)
+        self.palette_surface = pygame.Surface(self.palette_size)
+        self.palette_rect = self.palette_surface.get_rect()
+        self.palette_rect.bottomright = (self.window_size[0] - 10, self.window_size[1] - 50)
+        self.build_palette()
+
+    def build_palette(self):
+        w, h = self.palette_size
+        for x in range(w):
+            for y in range(h):
+                hue = (x / (w - 1)) * 360.0
+                sat = (y / (h - 1)) * 100.0
+                val = 100.0
+
+                c = pygame.Color(0, 0, 0)
+                c.hsva = (hue, sat, val, 100)
+                self.palette_surface.set_at((x, y), c)
+
     def handle_draw_shape(self, event):
         x, y = event.pos
         self.clicks.append((x, y))
@@ -48,6 +66,9 @@ class DrawApp:
         rect = label.get_rect()
         rect.bottomleft = (self.window_size[0] - 110, self.window_size[1] - 10)
         self.screen.blit(label, rect)
+
+    def draw_palette(self):
+        self.screen.blit(self.palette_surface, self.palette_rect)
     
     def handle_zoom(self, event):
         if event.type == pygame.MOUSEWHEEL:
@@ -120,6 +141,7 @@ class DrawApp:
             self.screen.fill((255, 255, 255))
             self.draw_shapes()
             self.draw_labels()
+            self.draw_palette()
             self.draw_cursor()
             pygame.display.flip()
 
