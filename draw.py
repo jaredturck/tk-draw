@@ -1,4 +1,6 @@
 import pygame, sys, time, math
+import tkinter as tk
+from tkinter import filedialog
 
 class DrawApp:
     def __init__(self):
@@ -7,6 +9,7 @@ class DrawApp:
         self.screen = pygame.display.set_mode(self.window_size)
         pygame.display.set_caption('Drawing Window')
         self.font = pygame.font.SysFont(None, 24)
+        self.small_font = pygame.font.SysFont(None, 18)
         self.clicks = []
         self.shapes = []
         self.selection_points = []
@@ -36,8 +39,7 @@ class DrawApp:
 
         self.current_hue = 0.0
         self.palette_cursor_x = None
-        self.show_grid = True
-        self.grid_toggle_rect = pygame.Rect(0, 0, 0, 0)
+        self.show_grid = False
 
         self.build_palette()
 
@@ -48,10 +50,12 @@ class DrawApp:
         self.sv_cursor_pos = None
         self.build_sv_box()
 
+        self.grid_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.border_label_rect = pygame.Rect(0, 0, 0, 0)
         self.background_label_rect = pygame.Rect(0, 0, 0, 0)
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
+        self.export_label_rect = pygame.Rect(0, 0, 0, 0)
 
     def build_palette(self):
         ''' Create a horizontal color palette surface (hue bar). '''
@@ -347,6 +351,20 @@ class DrawApp:
         if fill_color is not None:
             pygame.draw.ellipse(self.screen, fill_color, circle_rect)
         pygame.draw.ellipse(self.screen, border_color, circle_rect, 2)
+    
+    def draw_mouse_position(self):
+        x, y = pygame.mouse.get_pos()
+        label = self.small_font.render(f"x: {x}, y: {y}", True, (0, 0, 0))
+        self.screen.blit(label, (5, 5))
+    
+    def draw_export_label(self):
+        font = getattr(self, "small_font", self.font)
+        label_surface = font.render("export", True, (0, 0, 0))
+        label_rect = label_surface.get_rect()
+        label_rect.topright = (self.window_size[0] - 5, 5)
+
+        self.screen.blit(label_surface, label_rect)
+        self.export_label_rect = label_rect
 
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
@@ -483,6 +501,66 @@ class DrawApp:
             if self.grid_toggle_rect.collidepoint(event.pos):
                 self.show_grid = not self.show_grid
     
+    def color_to_hex(self, c):
+        if c is None:
+            return ""
+        r, g, b = int(c[0]), int(c[1]), int(c[2])
+        return f"#{r:02x}{g:02x}{b:02x}"
+    
+    def handle_export_click(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.export_label_rect.collidepoint(event.pos):
+                print("clicked")
+
+                lines = []
+                for shape in self.shapes:
+                    shape_type, points, border_color, line_width, fill_color, show_border = shape
+                    outline = self.color_to_hex(border_color) if show_border and line_width > 0 else ""
+                    fill = self.color_to_hex(fill_color) if fill_color is not None else ""
+                    width = line_width if show_border else 0
+
+                    if shape_type == 'rectangle':
+                        xs = [p[0] for p in points]
+                        ys = [p[1] for p in points]
+                        x0, y0 = min(xs), min(ys)
+                        x1, y1 = max(xs), max(ys)
+                        line = f'canvas.create_rectangle({x0}, {y0}, {x1}, {y1}, outline="{outline}", fill="{fill}", width={width})'
+                        lines.append(line)
+
+                    elif shape_type == 'circle':
+                        xs = [p[0] for p in points]
+                        ys = [p[1] for p in points]
+                        x0, y0 = min(xs), min(ys)
+                        x1, y1 = max(xs), max(ys)
+                        line = f'canvas.create_oval({x0}, {y0}, {x1}, {y1}, outline="{outline}", fill="{fill}", width={width})'
+                        lines.append(line)
+
+                    elif shape_type == 'triangle':
+                        (x1, y1), (x2, y2), (x3, y3) = points
+                        line = f'canvas.create_polygon({x1}, {y1}, {x2}, {y2}, {x3}, {y3}, outline="{outline}", fill="{fill}", width={width})'
+                        lines.append(line)
+
+                # open file dialog
+                root = tk.Tk()
+                root.withdraw()
+                file_path = filedialog.asksaveasfilename(
+                    defaultextension=".py",
+                    filetypes=[("Python files", "*.py"), ("All files", "*.*")],
+                    title="Export script as..."
+                )
+
+                root.destroy()
+                if file_path:
+                    with open(file_path, "w", encoding="utf-8") as file:
+                        file.write('import tkinter as tk\n')
+                        file.write('root = tk.Tk()\n')
+                        file.write('root.title("Tkinter Canvas")\n')
+                        file.write(f'canvas = tk.Canvas(root, width={self.window_size[0]}, height={self.window_size[1]}, bg="{self.canvas_color}")\n')
+                        file.write('canvas.pack()\n\n')
+                        file.write("\n".join(lines))
+                        file.write('\n\nroot.mainloop()\n')
+                    print("Exported to:", file_path)
+    
     def main(self):
         running = True
         while running:
@@ -498,6 +576,7 @@ class DrawApp:
                 self.handle_border_toggle_click(event)
                 self.handle_grid_toggle_click(event)
                 self.handle_shape_selection(event)
+                self.handle_export_click(event)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if mods & pygame.KMOD_CTRL:
@@ -515,6 +594,7 @@ class DrawApp:
             self.draw_sv_box()
             self.draw_labels()
             self.draw_palette()
+            self.draw_export_label()
             self.draw_shape_labels()
             self.draw_cursor()
             
