@@ -555,7 +555,7 @@ class DrawApp:
                         file.write('import tkinter as tk\n')
                         file.write('root = tk.Tk()\n')
                         file.write('root.title("Tkinter Canvas")\n')
-                        file.write(f'canvas = tk.Canvas(root, width={self.window_size[0]}, height={self.window_size[1]}, bg="{self.canvas_color}")\n')
+                        file.write(f'canvas = tk.Canvas(root, width={self.window_size[0]}, height={self.window_size[1]}, bg="{self.color_to_hex(self.canvas_color)}")\n')
                         file.write('canvas.pack()\n\n')
                         file.write("\n".join(lines))
                         file.write('\n\nroot.mainloop()\n')
