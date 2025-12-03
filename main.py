@@ -37,9 +37,9 @@ class ChristmasDrawing:
         w, h = s, s * 0.7
         self.draw_in_reverse(
             (self.draw_triangle, x, y, w, h), # 1st tier
-            (self.draw_triangle, x, y + h, w + 40, h + 10),  # 2nd tier
-            (self.draw_triangle, x, y + 2*h, w + 90, h + 20),  # 3rd tier
-            (self.draw_triangle, x, y + 3*h, w + 140, h + 30)   # 4th tier
+            (self.draw_triangle, x, y + h, s*1.4, s*0.8),  # 2nd tier
+            (self.draw_triangle, x, y + 2*h, s*1.9, s*0.9),  # 3rd tier
+            (self.draw_triangle, x, y + 3*h, s*2.4, s*1.0)   # 4th tier
         )
     
     def main(self):
