@@ -17,7 +17,6 @@ class DrawApp:
         self.fill_color = None
         self.color_mode = 'border'
         self.show_border = True
-        self.palette_cursor_x = None
 
         self.last_click = time.time()
         self.offset = (0, 0)
@@ -30,26 +29,46 @@ class DrawApp:
         self.palette_surface = pygame.Surface(self.palette_size)
         self.palette_rect = self.palette_surface.get_rect()
         self.palette_rect.midbottom = (self.window_size[0] // 2, self.window_size[1] - 5)
+
+        self.current_hue = 0.0
+        self.palette_cursor_x = None
+
         self.build_palette()
+
+        self.sv_size = (100, 100)
+        self.sv_surface = pygame.Surface(self.sv_size)
+        self.sv_rect = self.sv_surface.get_rect()
+        self.sv_rect.bottomright = (self.window_size[0] - 200, self.window_size[1] - 40)
+        self.sv_cursor_pos = None
+        self.build_sv_box()
 
         self.border_label_rect = pygame.Rect(0, 0, 0, 0)
         self.background_label_rect = pygame.Rect(0, 0, 0, 0)
         self.border_toggle_rect = pygame.Rect(0, 0, 0, 0)
         self.canvas_label_rect = pygame.Rect(0, 0, 0, 0)
 
-
     def build_palette(self):
-        ''' Create a horizontal color palette surface. '''
+        ''' Create a horizontal color palette surface (hue bar). '''
         w, h = self.palette_size
         for x in range(w):
             hue = (x / (w - 1)) * 360.0
             sat = 100.0
             val = 100.0
-
             c = pygame.Color(0, 0, 0)
             c.hsva = (hue, sat, val, 100)
             for y in range(h):
                 self.palette_surface.set_at((x, y), c)
+
+    def build_sv_box(self):
+        ''' Build the 2D saturation/value box for the current hue. '''
+        w, h = self.sv_size
+        for x in range(w):
+            sat = (x / (w - 1)) * 100.0
+            for y in range(h):
+                val = 100.0 - (y / (h - 1)) * 100.0
+                c = pygame.Color(0, 0, 0)
+                c.hsva = (self.current_hue, sat, val, 100)
+                self.sv_surface.set_at((x, y), c)
 
     def handle_draw_shape(self, event):
         ''' Record clicks and draw triangle after 3 clicks. '''
@@ -147,7 +166,7 @@ class DrawApp:
         self.canvas_label_rect = canvas_rect
 
     def draw_palette(self):
-        ''' Draw the color palette at the bottom of the screen '''
+        ''' Draw the color palette (hue bar) at the bottom of the screen '''
         self.screen.blit(self.palette_surface, self.palette_rect)
         pygame.draw.rect(self.screen, (0, 0, 0), self.palette_rect, 1)
 
@@ -156,7 +175,16 @@ class DrawApp:
             y1 = self.palette_rect.top
             y2 = self.palette_rect.bottom
             pygame.draw.line(self.screen, (0, 0, 0), (x, y1), (x, y2), 2)
-        
+
+    def draw_sv_box(self):
+        ''' Draw the saturation/value box. '''
+        self.screen.blit(self.sv_surface, self.sv_rect)
+        pygame.draw.rect(self.screen, (0, 0, 0), self.sv_rect, 1)
+
+        if self.sv_cursor_pos is not None:
+            x, y = self.sv_cursor_pos
+            pygame.draw.circle(self.screen, (0, 0, 0), (x, y), 4, 1)
+
     def handle_zoom(self, event):
         ''' Zoom in and out with mouse wheel '''
         if event.type == pygame.MOUSEWHEEL:
@@ -210,12 +238,27 @@ class DrawApp:
     def handle_color_pick(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.palette_rect.collidepoint(event.pos):
-                picked = self.palette_surface.get_at(
-                    (event.pos[0] - self.palette_rect.x,
-                     event.pos[1] - self.palette_rect.y)
-                )
-
+                local_x = event.pos[0] - self.palette_rect.x
                 self.palette_cursor_x = event.pos[0]
+
+                self.current_hue = (local_x / (self.palette_width - 1)) * 360.0
+                self.build_sv_box()
+
+                picked = self.palette_surface.get_at((local_x, event.pos[1] - self.palette_rect.y))
+
+                if self.color_mode == 'border':
+                    self.color = picked
+                elif self.color_mode == 'background':
+                    self.fill_color = picked
+                else:
+                    self.canvas_color = picked
+
+            elif self.sv_rect.collidepoint(event.pos):
+                local_x = event.pos[0] - self.sv_rect.x
+                local_y = event.pos[1] - self.sv_rect.y
+                picked = self.sv_surface.get_at((local_x, local_y))
+
+                self.sv_cursor_pos = event.pos
 
                 if self.color_mode == 'border':
                     self.color = picked
@@ -266,6 +309,7 @@ class DrawApp:
 
             self.screen.fill(self.canvas_color)
             self.draw_shapes()
+            self.draw_sv_box()
             self.draw_labels()
             self.draw_palette()
             self.draw_cursor()
