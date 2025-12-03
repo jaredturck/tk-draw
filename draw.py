@@ -8,7 +8,7 @@ class DrawApp:
         pygame.display.set_caption('Drawing Window')
         self.font = pygame.font.SysFont(None, 24)
         self.clicks = []
-        self.triangles = []
+        self.shapes = []
         self.selection_points = []
         self.line_width = 5
 
@@ -75,28 +75,39 @@ class DrawApp:
                 self.sv_surface.set_at((x, y), c)
 
     def handle_draw_shape(self, event):
-        ''' Record clicks and draw triangle after 3 clicks. '''
+        '''Record clicks and add a shape to the stack when enough points are collected. '''
         x, y = event.pos
         self.clicks.append((x, y))
         self.selection_points.append((x, y))
         self.last_click = time.time()
 
-        if len(self.clicks) == 3:
-            self.triangles.append([self.clicks, self.color, self.line_width, self.fill_color, self.show_border])
+        # triangle
+        if self.selected_shape == 'triangle' and len(self.clicks) == 3:
+            shape = ['triangle', self.clicks, self.color, self.line_width, self.fill_color, self.show_border]
+            self.shapes.append(shape)
+            self.clicks = []
+            self.selection_points = []
+
+        # rectangle
+        elif self.selected_shape == 'rectangle' and len(self.clicks) == 4:
+            shape = ['rectangle', self.clicks, self.color, self.line_width, self.fill_color, self.show_border]
+            self.shapes.append(shape)
             self.clicks = []
             self.selection_points = []
     
     def draw_shapes(self):
-        ''' Draw all triangles and selection points '''
-        for triangle, border_color, line_width, fill_color, show_border in self.triangles:
+        '''Draw all shapes (triangles, rectangles, etc.) and selection points.'''
+        for shape in self.shapes:
+            shape_type, points, border_color, line_width, fill_color, show_border = shape
+
             if fill_color is not None:
-                pygame.draw.polygon(self.screen, fill_color, triangle, 0)
+                pygame.draw.polygon(self.screen, fill_color, points, 0)
             if show_border:
-                pygame.draw.polygon(self.screen, border_color, triangle, line_width)
+                pygame.draw.polygon(self.screen, border_color, points, line_width)
 
         for point in self.selection_points:
             pygame.draw.circle(self.screen, self.color, point, self.line_width)
-        
+
         if time.time() - self.last_click > 3:
             self.selection_points = []
             self.clicks = []
@@ -298,10 +309,10 @@ class DrawApp:
             cx = self.window_size[0] / 2
             cy = self.window_size[1] / 2
 
-            for i in range(len(self.triangles)):
-                self.triangles[i][0][0] = (cx + (self.triangles[i][0][0][0] - cx) * s, cy + (self.triangles[i][0][0][1] - cy) * s)
-                self.triangles[i][0][1] = (cx + (self.triangles[i][0][1][0] - cx) * s, cy + (self.triangles[i][0][1][1] - cy) * s)
-                self.triangles[i][0][2] = (cx + (self.triangles[i][0][2][0] - cx) * s, cy + (self.triangles[i][0][2][1] - cy) * s)
+            for shape in self.shapes:
+                points = shape[1]
+                for i, (px, py) in enumerate(points):
+                    points[i] = (cx + (px - cx) * s, cy + (py - cy) * s)
 
             self.grid_offset_x = cx + (self.grid_offset_x - cx) * s
             self.grid_offset_y = cy + (self.grid_offset_y - cy) * s
@@ -313,10 +324,10 @@ class DrawApp:
             x = new_offset[0] - self.start_offset[0]
             y = new_offset[1] - self.start_offset[1]
 
-            for i in range(len(self.triangles)):
-                self.triangles[i][0][0] = (self.triangles[i][0][0][0] + x, self.triangles[i][0][0][1] + y)
-                self.triangles[i][0][1] = (self.triangles[i][0][1][0] + x, self.triangles[i][0][1][1] + y)
-                self.triangles[i][0][2] = (self.triangles[i][0][2][0] + x, self.triangles[i][0][2][1] + y)
+            for shape in self.shapes:
+                points = shape[1]
+                for i, (px, py) in enumerate(points):
+                    points[i] = (px + x, py + y)
 
             self.grid_offset_x += x
             self.grid_offset_y += y
@@ -336,8 +347,8 @@ class DrawApp:
         ''' Undo last shape with Ctrl+Z '''
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_z and (mods & pygame.KMOD_CTRL):
-                if self.triangles:
-                    self.triangles.pop()
+                if self.shapes:
+                    self.shapes.pop()
     
     def handle_color_pick(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
