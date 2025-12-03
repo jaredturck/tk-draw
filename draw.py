@@ -25,13 +25,12 @@ class DrawApp:
             self.triangles.append([self.clicks, self.color, self.line_width])
             self.clicks = []
             self.selection_points = []
-            print('Trinagle')
     
     def draw_shapes(self):
         for triangle, color, line_width in self.triangles:
             pygame.draw.polygon(self.screen, color, triangle, line_width)
         for point in self.selection_points:
-            pygame.draw.circle(self.screen, (255,0,0), point, 5)
+            pygame.draw.circle(self.screen, (255,0,0), point, self.line_width)
         
         if time.time() - self.last_click > 3:
             self.selection_points = []
@@ -63,6 +62,22 @@ class DrawApp:
             
             self.start_offset = new_offset
     
+    def handle_line_thickness(self, event):
+        ''' Change the line thickness with [ and ] keys '''
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFTBRACKET:
+                self.line_width -= 1
+                self.line_width = max(1, self.line_width)
+            elif event.key == pygame.K_RIGHTBRACKET:
+                self.line_width += 1
+    
+    def handle_undo(self, event, mods):
+        ''' Undo last shape with Ctrl+Z '''
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_z and (mods & pygame.KMOD_CTRL):
+                if self.triangles:
+                    self.triangles.pop()
+    
     def main(self):
         running = True
         while running:
@@ -78,21 +93,9 @@ class DrawApp:
                         self.handle_draw_shape(event)
                     
                     self.start_offset = pygame.mouse.get_pos()
-                    print('Mouse down')
                 
-                # Change line thickness
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFTBRACKET:
-                        self.line_width -= 1
-                        self.line_width = max(1, self.line_width)
-                    elif event.key == pygame.K_RIGHTBRACKET:
-                        self.line_width += 1
-                
-                # Undo last triangle
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_z and (mods & pygame.KMOD_CTRL):
-                        if self.triangles:
-                            self.triangles.pop()
+                self.handle_line_thickness(event)
+                self.handle_undo(event, mods)
 
             self.screen.fill((255, 255, 255))
             self.draw_shapes()
