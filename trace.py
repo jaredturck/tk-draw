@@ -15,28 +15,33 @@ class ImageTracer:
             0.9: (28,  15,  4, 0.67, 0.21, 0.95),
             1.0: (32,   8,  2, 0.60, 0.15, 1.00),
         }
-    
+        self.opticurve = True
+        self.configure_quality(0.5)
+
     def configure_quality(self, level):
-        ''' Configure tracing parameters based on quality level (0.1 to 1.0) '''
-        parms = self.quality_presets[level]
-        self.n_colors = parms[0]
-        self.min_pixels = parms[1]
-        self.turdsize = parms[2]
-        self.alphamax = parms[3]
-        self.opttolerance = parms[4]
-        self.downscale = parms[5]
+        ''' Configure tracing parameters based on quality level '''
+        n_colors, min_pixels, turdsize, alphamax, opttolerance, downscale = self.quality_presets[level]
+        self.n_colors = n_colors
+        self.min_pixels = min_pixels
+        self.turdsize = turdsize
+        self.alphamax = alphamax
+        self.opttolerance = opttolerance
+        self.downscale = downscale
 
     def trace_image(self, mask):
+        ''' Trace the bitmap image and return a list of paths '''
         bm = Bitmap(mask, blacklevel=0.5)
-        return bm.trace(turdsize = self.turdsize, alphamax=self.alphamax, opttolerance=self.opttolerance)
+        return bm.trace(turdsize=self.turdsize, alphamax=self.alphamax, opticurve=self.opticurve, opttolerance=self.opttolerance)
         
     def mask_for_index(self, idx, indices, w, h):
+        ''' Create a binary mask for the given palette index '''
         mask_data = [0 if p == idx else 255 for p in indices]
         mask = Image.new('L', (w, h), 255)
         mask.putdata(mask_data)
         return mask
     
     def build_svg(self, plist, fill):
+        ''' Build SVG path elements from the traced paths '''
         svg_paths = []
         for curve in plist:
             parts = []
@@ -60,8 +65,14 @@ class ImageTracer:
         return svg_paths
 
     def process_image(self, input_filename, output_filename, quality=0.5):
+        ''' Process the input image and save the traced SVG output '''
         self.configure_quality(quality)
         img = Image.open(input_filename).convert('RGB')
+        if self.downscale != 1.0:
+            new_w = max(1, int(img.width * self.downscale))
+            new_h = max(1, int(img.height * self.downscale))
+            img = img.resize((new_w, new_h), Image.LANCZOS)
+
         q = img.convert('P', palette=Image.ADAPTIVE, colors=self.n_colors)
         w, h = q.size
 
@@ -93,6 +104,7 @@ class ImageTracer:
                 file.write(f'  {path}\n')
             file.write('</svg>\n')
 
+
 if __name__ == '__main__':
     tracer = ImageTracer()
-    tracer.process_image('examples/image_luning.png', 'examples/output.svg', quality=0.5)
+    tracer.process_image('examples/image_luning.png', 'examples/output.svg', quality=0.2)
